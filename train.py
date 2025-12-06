@@ -57,9 +57,6 @@ def main():
         else:
             config.dtype = 'float16'
     
-    # Convert config to dict for logging (wandb expects a dict)
-    config_dict = config.to_dict()
-    
     # various inits, derived attributes, I/O setup
     with DistributedManager() as dist:
         ddp = dist.is_distributed
@@ -228,10 +225,11 @@ def main():
             # logging
             if config.wandb_log and master_process:
                 import wandb
-                wandb.init(project=config.wandb_project, name=config.wandb_run_name, config=config_dict)
+                wandb.init(project=config.wandb_project, name=config.wandb_run_name, config=config)
             
             # initialize local metric tracking
             tracking.init(log_dir=config.out_dir, rank=dist.rank)
+            tracking.log(config)
 
             # training loop
             X, Y = get_batch('train') # fetch the very first batch
@@ -281,7 +279,7 @@ def main():
                                     'iter_num': iter_num,
                                     'best_val_loss': best_val_loss,
                                     'model_args': model_args,
-                                    'config': config_dict,
+                                    'config': config,
                                     'reproducibility': repro_metadata,
                                 },
                                 model=raw_model,
