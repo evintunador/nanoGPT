@@ -1,0 +1,55 @@
+# finetune GPT-2 on shakespeare dataset
+# Run: python train.py --config=config/finetune_shakespeare.yaml
+
+out_dir: 'out-shakespeare'
+eval_interval: 5
+log_interval: 1
+eval_iters: 40
+eval_only: false
+# only save checkpoints if the validation loss improves
+always_save_checkpoint: false
+
+wandb_log: false # feel free to turn on
+wandb_project: 'shakespeare'
+wandb_run_name: 'ft-shakespeare'
+
+# data
+dataset: 'shakespeare'
+# the number of examples per iter:
+# 1 batch_size * 32 grad_accum * 1024 tokens = 32,768 tokens/iter
+# shakespeare has 301,966 tokens, so 1 epoch ~= 9.2 iters
+batch_size: 1
+gradient_accumulation_steps: 32
+block_size: 1024
+
+# model (will be loaded from gpt2-xl checkpoint)
+n_layer: 48
+n_head: 25
+n_embd: 1600
+dropout: 0.1
+bias: true
+
+# adamw optimizer
+# finetune at constant LR
+learning_rate: 3.0e-5
+max_iters: 20
+weight_decay: 1.0e-1
+beta1: 0.9
+beta2: 0.95
+grad_clip: 1.0
+
+# learning rate decay settings
+decay_lr: false
+warmup_iters: 0
+lr_decay_iters: 20
+min_lr: 3.0e-5
+
+# DDP settings
+backend: 'nccl'
+
+# system
+device: 'cuda'
+dtype: 'bfloat16'
+compile: true
+init_from: 'gpt2-xl' # this is the largest GPT-2 model
+

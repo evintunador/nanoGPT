@@ -1,0 +1,14 @@
+name: Compile
+defaults:
+  x_axis_key: iter
+  x_axis_scale: 1.0
+  smoothing: 0.0
+experiments:
+- out-shakespeare-char/**/*.jsonl
+metrics:
+- name: Train Loss
+  keys:
+  - train/loss
+- name: Validation Loss
+  keys:
+  - eval/val_loss

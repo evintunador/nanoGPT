@@ -1,0 +1,50 @@
+# evaluate gpt2-large
+# n_layer: 36, n_head: 20, n_embd: 1280
+# 774M parameters
+out_dir: 'out'
+eval_interval: 2000
+log_interval: 1
+eval_iters: 500 # use more iterations to get good estimate
+eval_only: true
+always_save_checkpoint: false
+
+wandb_log: false
+wandb_project: 'owt'
+wandb_run_name: 'gpt2-large'
+
+# data
+dataset: 'openwebtext'
+gradient_accumulation_steps: 1
+batch_size: 8
+block_size: 1024
+
+# model (from gpt2-large checkpoint)
+n_layer: 36
+n_head: 20
+n_embd: 1280
+dropout: 0.0
+bias: true
+
+# adamw optimizer
+learning_rate: 6.0e-4
+max_iters: 1
+weight_decay: 1.0e-1
+beta1: 0.9
+beta2: 0.95
+grad_clip: 1.0
+
+# learning rate decay settings
+decay_lr: false
+warmup_iters: 2000
+lr_decay_iters: 600000
+min_lr: 6.0e-5
+
+# DDP settings
+backend: 'nccl'
+
+# system
+device: 'cuda'
+dtype: 'bfloat16'
+compile: true
+init_from: 'gpt2-large'
+
