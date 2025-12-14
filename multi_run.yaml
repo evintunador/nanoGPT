@@ -1,0 +1,80 @@
+# Multi-run configuration for hyperparameter sweeps
+# This example shows how to run multiple training runs with different learning rates and weight decay values
+
+name: "nano_gpt_lr_wd_sweep"
+
+
+# Define the command structure
+command:
+  type: python  # Options: python, torchrun, slurm
+  script: train.py
+  # nproc_per_node: 1  # Number of GPUs per node for torchrun
+  # Optional torchrun parameters:
+  # nnodes: 1
+  # node_rank: 0
+  # master_addr: localhost
+  # master_port: 29500
+
+
+# Define parameters to pass to the script
+parameters:
+  # Grid parameters - swept over (all combinations)
+  grid:
+    learning_rate: [1.0e-4, 1.0e-3, 1.0e-2]
+    weight_decay: [0.0, 0.1]
+  
+  # Static parameters - same for all runs
+  static:
+    config: config/train_shakespeare_char.yaml
+    device: mps
+    max_iters: 500
+    eval_interval: 100
+    eval_iters: 20
+    n_layer: 4
+    n_head: 4
+    n_embd: 128
+    block_size: 64
+    batch_size: 12
+
+
+# Execution settings
+execution:
+  mode: sequential  # Options: sequential, parallel
+  max_workers: 1  # Only used when mode is parallel (for python/torchrun) or as semaphore for slurm
+  max_retries: 0  # Number of times to retry failed runs
+
+
+# ============================================================================
+# ADVANCED EXAMPLES (commented out)
+# ============================================================================
+
+# Example 1: Paired parameters (sweep together as units)
+# parameters:
+#   grid:
+#     learning_rate: [1.0e-4, 1.0e-3]
+#   static:
+#     device: mps
+#   paired:
+#     - name: architecture
+#       combinations:
+#         - {n_layer: 4, n_embd: 128}
+#         - {n_layer: 6, n_embd: 256}
+#         - {n_layer: 8, n_embd: 512}
+# This generates: 2 lr × 3 arch = 6 runs
+
+# Example 2: List constants in grid
+# parameters:
+#   grid:
+#     learning_rate: [1.0e-4, 1.0e-3]
+#     # If you want a list value in grid that isn't swept, use double brackets:
+#     imagenet_means: [[0.456, 0.428, 0.493]]  # Single list value, not swept
+#   static:
+#     device: mps
+#     # In static, just use regular lists - no double brackets needed:
+#     imagenet_stds: [0.229, 0.224, 0.225]
+
+# Example 3: Raw commands (full control)
+# raw_commands:
+#   - "python train.py --config config1.yaml --lr 0.001"
+#   - "python train.py --config config2.yaml --lr 0.01 --special_flag"
+#   - "python train.py --config config3.yaml --lr 0.1"
